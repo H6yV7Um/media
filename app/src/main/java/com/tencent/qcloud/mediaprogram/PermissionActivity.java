@@ -19,8 +19,8 @@ public class PermissionActivity extends AppCompatActivity {
     private static final String TAG = "PermissionActivity";
 
     private long lastPressTimestamp = System.currentTimeMillis() / 1000;
-
     private final byte PERMISSION_REQUEST_CODE = 1;
+    private HomeKeyListener homeKeyListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +31,7 @@ public class PermissionActivity extends AppCompatActivity {
             Log.d(TAG, "已授权");
             jump2MainActivity();
         }
+        registerHomeListener();
     }
 
     private boolean hasPermissionGranted(){
@@ -117,6 +118,18 @@ public class PermissionActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unRegisterHomeListener();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unRegisterHomeListener();
+    }
+
     private void jump2MainActivity(){
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
@@ -132,5 +145,32 @@ public class PermissionActivity extends AppCompatActivity {
         setIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         setIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         startActivity(setIntent);
+    }
+
+    /**
+     * handle pressed the key(Home)
+     */
+    private void registerHomeListener() {
+        homeKeyListener = new HomeKeyListener(this);
+        homeKeyListener
+                .setOnHomePressedListener(new HomeKeyListener.OnHomePressedListener() {
+
+                    @Override
+                    public void onHomePressed() {
+                        finish();
+                    }
+
+                    @Override
+                    public void onHomeLongPressed() {
+                    }
+                });
+        homeKeyListener.registerHomeReceive();
+    }
+
+    private void unRegisterHomeListener() {
+        if (homeKeyListener != null) {
+            homeKeyListener.unregisterHomeReceiver();
+        }
+        homeKeyListener = null;
     }
 }
